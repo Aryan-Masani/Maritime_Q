@@ -13,14 +13,14 @@ import ReportTab from "./tabs/ReportTab.jsx";
 import { useOptimization } from "./hooks/useOptimization.js";
 
 const TABS = [
-  { id: "pareto",     label: "📈 Interactive Pareto Trade-offs" },
-  { id: "allocation", label: "📋 Fleet Allocation & Emissions" },
-  { id: "baseline",   label: "⚔️ Classical NSGA-II Benchmark" },
-  { id: "report",     label: "📄 Report Export (PDF/Markdown)" },
+  { id: "pareto", label: "Interactive Pareto Trade-offs" },
+  { id: "allocation", label: "Fleet Allocation & Emissions" },
+  { id: "baseline", label: "Classical NSGA-II Benchmark" },
+  { id: "report", label: "Report Export (PDF/Markdown)" },
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab]   = useState("pareto");
+  const [activeTab, setActiveTab] = useState("pareto");
   const [selectedIdx, setSelectedIdx] = useState(0);
 
   const {

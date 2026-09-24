@@ -1,7 +1,10 @@
 /**
  * AllocationTab.jsx — Tab 2: Vessel-to-route allocation table + charts.
+ * Now includes a 3D animated globe (GlobeRouteMap) that shows vessel
+ * voyage legs as fuel-type-coloured arcs between 5 major world ports.
  */
 import Plot from "react-plotly.js";
+import GlobeRouteMap from "../components/GlobeRouteMap.jsx";
 
 const PLOTLY_DARK = {
   paper_bgcolor: "rgba(0,0,0,0)",
@@ -13,7 +16,7 @@ const PLOTLY_DARK = {
 const FUEL_COLORS = {
   HFO:      "#94a3b8",
   LNG:      "#27AEB9",
-  Methanol: "#34d399",
+  Methanol: "#facc15",
   Hydrogen: "#a78bfa",
   Ammonia:  "#f472b6",
 };
@@ -56,6 +59,11 @@ export default function AllocationTab({ results, selectedIdx }) {
 
   return (
     <div>
+      {/* ── 3-D Globe Route Map ─────────────────────────────────── */}
+      <div className="card globe-card">
+        <GlobeRouteMap assignments={assignments} />
+      </div>
+
       <div className="card">
         <div className="card-title">Vessel-to-Route Allocation Matrix (Solution #{selectedIdx + 1})</div>
         <div className="table-wrap">
