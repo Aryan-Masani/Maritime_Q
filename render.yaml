@@ -2,10 +2,13 @@ services:
   - type: web
     name: fleet-api
     runtime: python
-    rootDir: web_app/api
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    # rootDir must be repo root so that moqpso/, dashboard/, fuel_prediction/
+    # are all on the Python path alongside web_app/api/
+    rootDir: .
+    buildCommand: pip install -r web_app/api/requirements.txt
+    startCommand: uvicorn web_app.api.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHONPATH
+        # Repo root on PYTHONPATH so "from moqpso..." / "from dashboard..." resolve
         value: /opt/render/project/src
     plan: free
