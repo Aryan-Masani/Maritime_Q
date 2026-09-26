@@ -60,6 +60,25 @@ from models import (
     Nsga2PointOut,
 )
 
+# Fuel predictor — lazy singleton (loaded once on first request)
+_fuel_predictor_quantum = None
+_fuel_predictor_baseline = None
+
+def _get_fuel_predictor(model_type: str = "quantum"):
+    global _fuel_predictor_quantum, _fuel_predictor_baseline
+    try:
+        from predict import FuelPredictor
+    except ImportError:
+        from fuel_prediction.fuel_prediction.predict import FuelPredictor
+    if model_type == "quantum":
+        if _fuel_predictor_quantum is None:
+            _fuel_predictor_quantum = FuelPredictor(model_type="quantum")
+        return _fuel_predictor_quantum
+    else:
+        if _fuel_predictor_baseline is None:
+            _fuel_predictor_baseline = FuelPredictor(model_type="baseline")
+        return _fuel_predictor_baseline
+
 # ── FastAPI app ─────────────────────────────────────────────────────────────
 app = FastAPI(
     title="Maritime Q — Green Fleet Optimization API",
@@ -317,6 +336,60 @@ def _run_optimization_thread(run_id: str, req: OptimizationRequest):
 @app.get("/api/health", response_model=HealthResponse)
 def health():
     return HealthResponse()
+
+
+class FuelPredictionRequest(BaseModel):
+    vessel_type: str                  # container | bulk_carrier | tanker | general_cargo
+    displacement_tons: float
+    cargo_load_fraction: float = 0.6  # 0–1
+    speed_knots: float
+    fuel_type: str                    # HFO | LNG | Methanol | Hydrogen | Ammonia
+    distance_nm: float
+    wave_height_m: float
+    wind_speed_knots: float = 8.0
+    model_type: str = "quantum"       # quantum | baseline
+
+
+@app.post("/api/predict-fuel")
+def predict_fuel(req: FuelPredictionRequest):
+    """Predict fuel consumption (tons) and CO2 emissions (tons) using QIEA-tuned XGBoost."""
+    try:
+        predictor = _get_fuel_predictor(req.model_type)
+        fuel_tons = predictor.predict_one(
+            vessel_type=req.vessel_type,
+            fuel_type=req.fuel_type,
+            displacement_tons=req.displacement_tons,
+            cargo_load_fraction=req.cargo_load_fraction,
+            speed_knots=req.speed_knots,
+            wind_speed_knots=req.wind_speed_knots,
+            wave_height_m=req.wave_height_m,
+            distance_nm=req.distance_nm,
+        )
+        # Emission factors (tons CO2 per ton fuel)
+        emission_factors = {
+            "HFO": 3.114, "LNG": 2.750, "Methanol": 1.375,
+            "Hydrogen": 0.0, "Ammonia": 0.0,
+        }
+        ef = emission_factors.get(req.fuel_type, 3.114)
+        co2_tons = max(0.0, fuel_tons) * ef
+
+        # Fuel cost estimates (USD per ton)
+        fuel_costs = {
+            "HFO": 520, "LNG": 680, "Methanol": 650,
+            "Hydrogen": 2500, "Ammonia": 900,
+        }
+        fc = fuel_costs.get(req.fuel_type, 520)
+        cost_usd = max(0.0, fuel_tons) * fc
+
+        return {
+            "fuel_consumption_tons": round(max(0.0, fuel_tons), 3),
+            "co2_emissions_tons": round(co2_tons, 3),
+            "estimated_cost_usd": round(cost_usd, 2),
+            "model_used": "QIEA-tuned XGBoost" if req.model_type == "quantum" else "Baseline XGBoost",
+            "inputs": req.model_dump(),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.get("/api/default-scenario")

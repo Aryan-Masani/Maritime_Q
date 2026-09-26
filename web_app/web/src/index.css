@@ -886,3 +886,67 @@ hr { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
 
 /* Override globe canvas-wrap height — controlled by JS dims state */
 .globe-canvas-wrap { height: 480px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Fuel Prediction Tab — FuelPredictionTab.jsx
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Inline spinner for predict button */
+.fp-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: fp-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes fp-spin { to { transform: rotate(360deg); } }
+
+/* Quantum loading rings */
+.fp-loading-rings {
+  position: relative;
+  width: 80px; height: 80px;
+}
+
+.fp-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  animation: fp-orbit linear infinite;
+}
+
+.fp-ring-1 {
+  inset: 0;
+  border-top-color: var(--border-accent);
+  animation-duration: 1.2s;
+}
+
+.fp-ring-2 {
+  inset: 10px;
+  border-right-color: var(--purple);
+  animation-duration: 1.8s;
+  animation-direction: reverse;
+}
+
+.fp-ring-3 {
+  inset: 20px;
+  border-bottom-color: var(--green);
+  animation-duration: 2.4s;
+}
+
+@keyframes fp-orbit { to { transform: rotate(360deg); } }
+
+/* Result panel fade-in + slide-up */
+.fp-result {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fp-result.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+

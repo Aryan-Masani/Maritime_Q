@@ -1,4 +1,4 @@
-/**
+﻿/**
  * App.jsx — Root application with sidebar + tab layout.
  */
 import { useState } from "react";
@@ -10,17 +10,18 @@ import ParetoTab from "./tabs/ParetoTab.jsx";
 import AllocationTab from "./tabs/AllocationTab.jsx";
 import BaselineTab from "./tabs/BaselineTab.jsx";
 import ReportTab from "./tabs/ReportTab.jsx";
+import FuelPredictionTab from "./tabs/FuelPredictionTab.jsx";
 import { useOptimization } from "./hooks/useOptimization.js";
 
-const TABS = [
-  { id: "pareto", label: "Interactive Pareto Trade-offs" },
-  { id: "allocation", label: "Fleet Allocation & Emissions" },
-  { id: "baseline", label: "Classical NSGA-II Benchmark" },
-  { id: "report", label: "Report Export (PDF/Markdown)" },
+const OPT_TABS = [
+  { id: "pareto",     label: "Interactive Pareto Trade-offs"  },
+  { id: "allocation", label: "Fleet Allocation & Emissions"   },
+  { id: "baseline",   label: "Classical NSGA-II Benchmark"    },
+  { id: "report",     label: "Report Export (PDF/Markdown)"   },
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState("pareto");
+  const [activeTab,   setActiveTab]   = useState("fuel");
   const [selectedIdx, setSelectedIdx] = useState(0);
 
   const {
@@ -51,23 +52,31 @@ export default function App() {
           </div>
         )}
 
-        {/* Results */}
-        {results ? (
-          <>
-            {/* Tab nav */}
-            <div className="tabs-nav">
-              {TABS.map(t => (
-                <button
-                  key={t.id}
-                  className={`tab-btn ${activeTab === t.id ? "active" : ""}`}
-                  onClick={() => setActiveTab(t.id)}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
+        {/* Tab nav — fuel always accessible; optimization tabs appear after running */}
+        <div className="tabs-nav">
+          {results && OPT_TABS.map(t => (
+            <button
+              key={t.id}
+              className={`tab-btn ${activeTab === t.id ? "active" : ""}`}
+              onClick={() => setActiveTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+          <button
+            className={`tab-btn ${activeTab === "fuel" ? "active" : ""}`}
+            onClick={() => setActiveTab("fuel")}
+          >
+            ⛽ Fuel Consumption Prediction
+          </button>
+        </div>
 
-            {/* Tab content */}
+        {/* Fuel prediction — standalone, no optimization run needed */}
+        {activeTab === "fuel" && <FuelPredictionTab />}
+
+        {/* Optimization result tabs */}
+        {results && activeTab !== "fuel" && (
+          <>
             {activeTab === "pareto" && (
               <ParetoTab
                 results={results}
@@ -90,8 +99,10 @@ export default function App() {
               />
             )}
           </>
-        ) : !isRunning && (
-          /* Empty state */
+        )}
+
+        {/* Empty state — no results, not running, not on fuel tab */}
+        {!results && !isRunning && activeTab !== "fuel" && (
           <div className="empty-state">
             <div className="empty-icon">🚢</div>
             <h2>Maritime Q — Green Fleet Optimizer</h2>
