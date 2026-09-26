@@ -3,7 +3,7 @@
  */
 import { useState, useRef, useCallback } from "react";
 
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "";
 
 export function useOptimization() {
   const [status, setStatus] = useState("idle"); // idle | running | done | error

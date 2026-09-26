@@ -1,9 +1,9 @@
-﻿/**
+/**
  * FuelPredictionTab.jsx — QIEA-tuned XGBoost Fuel Consumption Predictor
  */
 import { useState } from "react";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
 const VESSEL_TYPES = [
   { value: "container",     label: "Container Ship",  icon: "📦" },

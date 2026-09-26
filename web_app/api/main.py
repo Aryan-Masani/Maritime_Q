@@ -27,6 +27,7 @@ import numpy as np
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, Response
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 # ── sys.path setup ──────────────────────────────────────────────────────────
@@ -513,3 +514,9 @@ def get_markdown_report(run_id: str, sol_idx: int):
         media_type="text/markdown",
         headers={"Content-Disposition": f'attachment; filename="Fleet_Solution_{sol_idx+1}.md"'},
     )
+
+
+# ── Serve React frontend (must be LAST — after all /api routes) ──────────────
+_WEB_DIST = os.path.join(_WEBAPP_DIR, "web", "dist")
+if os.path.isdir(_WEB_DIST):
+    app.mount("/", StaticFiles(directory=_WEB_DIST, html=True), name="static")
