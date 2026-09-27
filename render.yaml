@@ -2,10 +2,9 @@ services:
   - type: web
     name: maritime-q
     runtime: python
-    rootDir: web_app/api
-    # Build React frontend first, then install Python deps
+    # Build React frontend, then install Python deps (paths relative to repo root)
     buildCommand: >
-      cd ../web && npm install && npm run build &&
-      cd ../api && pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+      cd web_app/web && npm install && npm run build &&
+      pip install -r web_app/api/requirements.txt
+    startCommand: uvicorn web_app.api.main:app --host 0.0.0.0 --port $PORT
     plan: free
