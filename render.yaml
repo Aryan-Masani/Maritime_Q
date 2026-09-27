@@ -5,6 +5,6 @@ services:
     # Build React frontend, then install Python deps (paths relative to repo root)
     buildCommand: >
       cd web_app/web && npm install && npm run build &&
-      pip install -r web_app/api/requirements.txt
+      cd ../api && pip install -r requirements.txt
     startCommand: uvicorn web_app.api.main:app --host 0.0.0.0 --port $PORT
     plan: free
